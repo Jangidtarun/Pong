@@ -1,0 +1,159 @@
+[gd_scene load_steps=9 format=3 uid="uid://sl3dhpanssjf"]
+
+[ext_resource type="Script" uid="uid://bf7mlx6ly6rol" path="res://scripts/main.gd" id="1_jyhfs"]
+[ext_resource type="PackedScene" uid="uid://cutvdlpqprqwn" path="res://scenes/player.tscn" id="1_o5qli"]
+[ext_resource type="PackedScene" uid="uid://bu2w1xofed2ry" path="res://scenes/ball.tscn" id="2_0wfyh"]
+[ext_resource type="PackedScene" uid="uid://cxayjbkfci38q" path="res://scenes/ai.tscn" id="3_sugp2"]
+[ext_resource type="FontFile" uid="uid://cprew07ms77ht" path="res://assets/font/public_pixel_font/PublicPixel.ttf" id="5_tbgi4"]
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_0wfyh"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_sugp2"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tbgi4"]
+bg_color = Color(0.372549, 0.67451, 0.494118, 0)
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_jyhfs")
+
+[node name="Player" parent="." groups=["paddle"] instance=ExtResource("1_o5qli")]
+position = Vector2(780, 0)
+acceleration = 3500.0
+friction = 3000.0
+metadata/_edit_lock_ = true
+
+[node name="AI" parent="." groups=["paddle"] instance=ExtResource("3_sugp2")]
+position = Vector2(20, 0)
+
+[node name="Ball" parent="." instance=ExtResource("2_0wfyh")]
+position = Vector2(400, 0)
+elasticity_coeff = 1.1
+momentum_transfer_factor = 0.8
+
+[node name="WorldBoundary" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="WorldBoundary"]
+rotation = 3.14159
+shape = SubResource("WorldBoundaryShape2D_0wfyh")
+
+[node name="Bottom" type="CollisionShape2D" parent="WorldBoundary"]
+position = Vector2(0, 800)
+shape = SubResource("WorldBoundaryShape2D_0wfyh")
+
+[node name="ScoreDetector" type="Node2D" parent="."]
+
+[node name="PlayerScoreDetector" type="Area2D" parent="ScoreDetector"]
+position = Vector2(-20, 400)
+scale = Vector2(1, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ScoreDetector/PlayerScoreDetector"]
+shape = SubResource("RectangleShape2D_sugp2")
+
+[node name="AIScoreDetector" type="Area2D" parent="ScoreDetector"]
+position = Vector2(820, 400)
+scale = Vector2(1, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ScoreDetector/AIScoreDetector"]
+shape = SubResource("RectangleShape2D_sugp2")
+
+[node name="UI" type="Control" parent="."]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_right = 800.0
+offset_bottom = 800.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ScoreBox" type="Panel" parent="UI"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 200.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_tbgi4")
+
+[node name="PlayerScore" type="Label" parent="UI/ScoreBox"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 600.0
+offset_top = -32.0
+offset_right = 664.0
+offset_bottom = 32.0
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("5_tbgi4")
+theme_override_font_sizes/font_size = 64
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AIScore" type="Label" parent="UI/ScoreBox"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -600.0
+offset_top = -32.0
+offset_right = -536.0
+offset_bottom = 32.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("5_tbgi4")
+theme_override_font_sizes/font_size = 64
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Round" type="Label" parent="UI"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -20.0
+offset_top = 19.0
+offset_right = 20.0
+offset_bottom = 51.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("5_tbgi4")
+theme_override_font_sizes/font_size = 32
+text = "Round: 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GameOverScreen" type="Control" parent="UI"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RestartButton" type="Button" parent="UI/GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -116.0
+offset_top = -20.0
+offset_right = 116.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("5_tbgi4")
+theme_override_font_sizes/font_size = 32
+text = "Restart"
+
+[connection signal="body_entered" from="ScoreDetector/PlayerScoreDetector" to="." method="_on_player_score_detector_body_entered"]
+[connection signal="body_entered" from="ScoreDetector/AIScoreDetector" to="." method="_on_ai_score_detector_body_entered"]
+[connection signal="button_up" from="UI/GameOverScreen/RestartButton" to="." method="_on_restart_button_button_up"]
