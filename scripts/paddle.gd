@@ -1,43 +1,42 @@
 extends CharacterBody2D
 
+const screen_top: float = 200
+const screen_bottom: float = 600
+const screen_left: float = 0
+const screen_right: float = 400
 
 @onready var sprite_2d: Sprite2D = $Sprite2D
 
-@export var max_speed: float = 1000
+@export var max_speed: float = 400
 @export var acceleration: float = 4000
-@export var friction: float = 3500
+@export var friction: float = 3000
 
-# calculated when game begins
-var screen_size: Vector2 = Vector2.ZERO
-var sprite_region_rect_size: Vector2 = Vector2.ZERO
 var paddle_width: float = 0
 var paddle_height: float = 0
-var move_up_limit: float = 0
-var move_down_limit: float = 0
+var direction: float = 0
 
 func _ready() -> void:
-	screen_size = get_viewport_rect().size
+	var paddle_size = sprite_2d.get_rect().size * self.scale
+	paddle_height = paddle_size.x
+	paddle_width = paddle_size.y
+	
 	reposition()
-	
-	sprite_region_rect_size = sprite_2d.region_rect.size
-	paddle_height = sprite_region_rect_size.y * sprite_2d.scale.y
-	paddle_width = sprite_region_rect_size.x * sprite_2d.scale.x
-	
-	move_down_limit = screen_size.y - paddle_height
-	move_up_limit = paddle_height
 
-func _physics_process(delta: float) -> void:
-	var direction: float = Input.get_axis("up", "down")
-	if direction:
-		velocity.y = move_toward(velocity.y, direction * max_speed, acceleration * delta)
-	else:
-		velocity.y = move_toward(velocity.y, 0, friction * delta)
-	
-	move_and_collide(velocity * delta)
-	global_position.y = clamp(global_position.y, move_up_limit, move_down_limit)
-	global_position.x = screen_size.x - 20
 
-	
-	
 func reposition() -> void:
-	position = Vector2(screen_size.x - 20, screen_size.y / 2)
+	position.x = (screen_left + screen_right) / 2
+
+
+func clamp_horizontal() -> void:
+	var left_lim: float = screen_left + paddle_width / 2
+	var right_lim: float = screen_right - paddle_width / 2
+	position.x = clamp(position.x, left_lim, right_lim)
+
+
+func move(speed: float, delta: float) -> void:
+	if direction:
+		velocity.x = move_toward(velocity.x, direction * speed, acceleration * delta)
+	else:
+		velocity.x = move_toward(velocity.x, 0, friction * delta)
+	move_and_collide(velocity * delta)
+	clamp_horizontal()

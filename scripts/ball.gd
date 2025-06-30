@@ -1,24 +1,25 @@
 extends CharacterBody2D
 
-
-@export var max_speed: float = 800
-@export var initial_speed: float = 300
-@export var acceleration: float = 600
-@export var elasticity_coeff: float = 0.8
-@export var momentum_transfer_factor: float = 0.6
-
-var speed: float = 0
+const screen_top: float = 200
+const screen_bottom: float = 600
+const screen_left: float = 0
+const screen_right: float = 400
 
 const max_opening_angle: float = 60
-const min_opening_angle: float = 10
+const min_opening_angle: float = 30
 
+@export var max_speed: float = 400
+@export var initial_speed: float = 300
+@export var acceleration: float = 500
+@export var elasticity_coeff: float = 0.6
+@export var momentum_transfer_factor: float = 0.4
+
+var speed: float = initial_speed
 var direction: Vector2 = Vector2.ZERO
-var screen_size: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
-	speed = initial_speed
-	screen_size = get_viewport_rect().size
 	reposition()
+
 
 func _physics_process(delta: float) -> void:
 	var collision: KinematicCollision2D = move_and_collide(direction * speed * delta)
@@ -36,8 +37,7 @@ func _physics_process(delta: float) -> void:
 
 
 func calculate_new_velocity(ball_velocity: Vector2, paddle_velocity: Vector2, normal: Vector2):
-	var v_pb: Vector2 = ball_velocity - paddle_velocity
-	var v_pb_n: float = v_pb.dot(normal)
+	var v_pb_n: float = (ball_velocity - paddle_velocity).dot(normal)
 	
 	if v_pb_n > 0:
 		return ball_velocity
@@ -50,12 +50,11 @@ func calculate_new_velocity(ball_velocity: Vector2, paddle_velocity: Vector2, no
 
 func reposition() -> void:
 	# set the position
-	position = Vector2(screen_size.x / 2, screen_size.y / 2)
+	position.x = (screen_left + screen_right) / 2
+	position.y = (screen_top + screen_bottom) / 2
 	
-	# set the direction
 	set_direction()
-	speed = initial_speed
-
+	reset_speed()
 
 func set_direction() -> void:
 	# get the angle in first quadrant
@@ -72,6 +71,11 @@ func set_direction() -> void:
 		4: # fourth quadrant
 			angle = -angle
 	
-	print(angle)
 	direction = Vector2(cos(deg_to_rad(angle)), sin(deg_to_rad(angle)))
-	print("direction: ", direction)
+
+func reset_speed() -> void:
+	speed = initial_speed
+
+func stop() -> void:
+	direction = Vector2.ZERO
+	speed = 0
